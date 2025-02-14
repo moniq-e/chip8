@@ -6,7 +6,7 @@ public class App {
         var rom = getClass().getResourceAsStream("/IBM Logo.ch8");
 
         var display = new Display();
-        var cpu = new CPU(rom);
+        var cpu = new CPU(rom, display);
         display.setVisible(true);
 
         while (true) {
