@@ -34,4 +34,10 @@ public class Display extends JFrame{
     public boolean[][] getPixels() {
         return pixels;
     }
+
+    public boolean togglePixel(int x, int y) {
+        pixels[y][x] = !pixels[y][x];
+
+        return !pixels[y][x];
+    }
 }

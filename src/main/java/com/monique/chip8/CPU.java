@@ -30,10 +30,20 @@ public class CPU {
     }
 
     public void tick() {
-        short opcode = (short) (ram[pc] << 8 | ram[pc+1]);
+        short opcode = (short) ((ram[pc] & 0xFF) << 8 | (ram[pc+1] & 0xFF));
+
+        opcode &= 0xFFFF;
         pc += 2;
-        int x = opcode & 0x0F00 >> 8;
-        int y = opcode & 0x00F0 >> 4;
+        
+        executeOpcode(opcode);
+        
+        delay -= (delay > 0) ? 1 : 0;
+        sound -= (sound > 0) ? 1 : 0;
+    }
+
+    public void executeOpcode(short opcode) {
+        int x = (opcode & 0x0F00) >> 8;
+        int y = (opcode & 0x00F0) >> 4;
 
         switch (opcode & 0xF000) {
             case 0x0000:
@@ -42,7 +52,7 @@ public class CPU {
                         display.clean();
                         break;
                     case 0x00EE:
-                        pc = iStack[15];
+                        pc = iStack[--i];
                         break;
                 }
                 break;
@@ -59,9 +69,25 @@ public class CPU {
                 i = (short) (opcode & 0xFFF);
                 break;
             case 0xD000:
-                
+                byte width = 8;
+                byte height = (byte) (opcode & 0xF);
+
+                variables[0xF] = 0;
+
+                for (int index = 0; index < height; index++) {
+                    byte sprite = ram[i + index];
+
+                    for (int j = 0; j < width; j++) {
+                        if ((sprite & 0x80) > 0) {
+                            if (display.togglePixel(variables[x] + j, variables[y] + index)) {
+                                variables[0xF] = 1;
+                            }
+                        }
+
+                        sprite <<= 1;
+                    }
+                }
                 break;
-            
             default:
                 break;
         }
@@ -92,11 +118,11 @@ public class CPU {
         font = font.replaceAll("\n", " ").trim();
         var fonts = font.split(", ");
 
-        int i = 0x50;
+        int index = 0x50;
         int temp;
         for (String f : fonts) {
             temp = Integer.decode(f);
-            ram[i++] = (byte) temp;
+            ram[index++] = (byte) temp;
         }
     }
 }
