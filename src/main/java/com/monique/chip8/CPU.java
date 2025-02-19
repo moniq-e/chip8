@@ -115,7 +115,7 @@ public class CPU {
         }
         scan.close();
 
-        font = font.replaceAll("\n", " ").trim();
+        font = font.replaceAll(";", ", ");
         var fonts = font.split(", ");
 
         int index = 0x50;
