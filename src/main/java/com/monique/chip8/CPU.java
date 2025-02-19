@@ -61,11 +61,53 @@ public class CPU {
             case 0x1000:
                 pc = (short) (opcode & 0x0FFF);
                 break;
+            case 0x2000:
+                stack[si++] = pc;
+                pc = (short) (opcode & 0x0FFF);
+                break;
+            case 0x3000:
+                if (variables[x] == (opcode & 0x00FF)) pc += 2;
+                break;
+            case 0x4000:
+                if (variables[x] != (opcode & 0x00FF)) pc += 2;
+                break;
+            case 0x5000:
+                if (variables[x] == variables[y]) pc += 2;
+                break;
             case 0x6000:
                 variables[x] = (byte) (opcode & 0x00FF);
                 break;
             case 0x7000:
                 variables[x] += (byte) (opcode & 0x00FF);
+                break;
+            case 0x8000:
+                switch (opcode & 0x000F) {
+                    case 0x0000:
+                        variables[x] = variables[y];
+                        break;
+                    case 0x0001:
+                        variables[x] |= variables[y];
+                        break;
+                    case 0x0002:
+                        variables[x] &= variables[y];
+                        break;
+                    case 0x0003:
+                        variables[x] ^= variables[y];
+                        break;
+                    case 0x0004:
+                        variables[x] += variables[y];
+                        break;
+                    case 0x0005:
+                        variables[x] -= variables[y];
+                        break;
+                    case 0x0007:
+                        variables[x] = (byte) (variables[y] - variables[x]);
+                        break;
+                    default:
+                        break;
+                }
+            case 0x9000:
+                if (variables[x] != variables[y]) pc += 2;
                 break;
             case 0xA000:
                 ir = (short) (opcode & 0x0FFF);
