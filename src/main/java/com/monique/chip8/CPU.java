@@ -59,20 +59,20 @@ public class CPU {
                 }
                 break;
             case 0x1000:
-                pc = (short) (opcode & 0xFFF);
+                pc = (short) (opcode & 0x0FFF);
                 break;
             case 0x6000:
-                variables[x] = (byte) (opcode & 0xFF);
+                variables[x] = (byte) (opcode & 0x00FF);
                 break;
             case 0x7000:
-                variables[x] += (byte) (opcode & 0xFF);
+                variables[x] += (byte) (opcode & 0x00FF);
                 break;
             case 0xA000:
-                ir = (short) (opcode & 0xFFF);
+                ir = (short) (opcode & 0x0FFF);
                 break;
             case 0xD000:
                 byte width = 8;
-                byte height = (byte) (opcode & 0xF);
+                byte height = (byte) (opcode & 0x000F);
 
                 variables[0xF] = 0;
 

@@ -16,7 +16,6 @@ public class Display extends JFrame{
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setUndecorated(true);
         add(panel);
-        pack();
     }
 
     public void setPixel(boolean state, int x, int y) {
