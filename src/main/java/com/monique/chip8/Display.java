@@ -11,7 +11,7 @@ public class Display extends JFrame{
 
         pixels = new boolean[32][64];
         panel = new Panel(this, 64, 32);
-        
+
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setUndecorated(true);
