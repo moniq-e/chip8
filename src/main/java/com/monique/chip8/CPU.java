@@ -7,8 +7,9 @@ public class CPU {
     private InputStream rom;
     private byte[] ram;
     private short pc;
-    private short i;
-    private short[] iStack;
+    private short si;
+    private short ir;
+    private short[] stack;
     private byte[] variables;
     private byte delay;
     private byte sound;
@@ -17,10 +18,11 @@ public class CPU {
     public CPU(InputStream rom, Display display) {
         ram = new byte[4096];
         pc = 0x200;
-        i = -1;
-        iStack = new short[16];
+        si = -1;
+        stack = new short[16];
         delay = 0;
         sound = 0;
+        ir = 0;
         variables = new byte[16];
 
         this.rom = rom;
@@ -52,7 +54,7 @@ public class CPU {
                         display.clean();
                         break;
                     case 0x00EE:
-                        pc = iStack[--i];
+                        pc = stack[--si];
                         break;
                 }
                 break;
@@ -66,7 +68,7 @@ public class CPU {
                 variables[x] += (byte) (opcode & 0xFF);
                 break;
             case 0xA000:
-                i = (short) (opcode & 0xFFF);
+                ir = (short) (opcode & 0xFFF);
                 break;
             case 0xD000:
                 byte width = 8;
@@ -74,12 +76,12 @@ public class CPU {
 
                 variables[0xF] = 0;
 
-                for (int index = 0; index < height; index++) {
-                    byte sprite = ram[i + index];
+                for (int i = 0; i < height; i++) {
+                    byte sprite = ram[ir + i];
 
                     for (int j = 0; j < width; j++) {
                         if ((sprite & 0x80) > 0) {
-                            if (display.togglePixel(variables[x] + j, variables[y] + index)) {
+                            if (display.togglePixel(variables[x] + j, variables[y] + i)) {
                                 variables[0xF] = 1;
                             }
                         }
@@ -118,11 +120,11 @@ public class CPU {
         font = font.replaceAll(";", ", ");
         var fonts = font.split(", ");
 
-        int index = 0x50;
+        int i = 0x50;
         int temp;
         for (String f : fonts) {
             temp = Integer.decode(f);
-            ram[index++] = (byte) temp;
+            ram[i++] = (byte) temp;
         }
     }
 }
