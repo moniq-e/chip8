@@ -3,7 +3,7 @@ package com.monique.chip8;
 public class App {
 
     private App() {
-        var rom = getClass().getResourceAsStream("/IBM Logo.ch8");
+        var rom = getClass().getResourceAsStream("/test_opcode.ch8");
 
         var display = new Display();
         var cpu = new CPU(rom, display);

@@ -135,18 +135,18 @@ public class CPU {
                 short width = 8;
                 short height = (short) (opcode & 0x000F);
 
-                byte xCord = (byte) (variables[x] & 63);
-                byte yCord = (byte) (variables[y] & 31);
+                byte xCord = (byte) (variables[x] & Display.WIDTH - 1);
+                byte yCord = (byte) (variables[y] & Display.HEIGHT - 1);
 
                 variables[0xF] = 0;
 
                 for (int i = 0; i < height; i++) {
-                    if (yCord + i > 31) break;
+                    if (yCord + i > Display.HEIGHT - 1) break;
 
                     var sprite = ram[ir + i];
 
                     for (int j = 0; j < width; j++) {
-                        if (xCord + j > 63) break;
+                        if (xCord + j > Display.WIDTH - 1) break;
 
                         if ((sprite & 0x80) > 0) {
                             if (display.togglePixel(xCord + j, yCord + i)) {
@@ -196,7 +196,17 @@ public class CPU {
                         break;
                     case 0x33:
                         for (int i = 0; i < 3; i++) {
-                            ram[ir + i] = (short) ((variables[x] / Math.pow(10, i)) % 10);
+                            ram[ir + i] = (short) ((variables[x] / Math.pow(10, 2 - i)) % 10);
+                        }
+                        break;
+                    case 0x55:
+                        for (int i = 0; i <= x; i++) {
+                            ram[ir++] = variables[i]; // ram[ir + i] on modern chip8 (chip48)
+                        }
+                        break;
+                    case 0x65:
+                        for (int i = 0; i <= x; i++) {
+                            variables[i] = ram[ir++]; // ram[ir + i] on modern chip8 (chip48)
                         }
                         break;
                     default:

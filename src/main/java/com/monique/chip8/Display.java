@@ -3,6 +3,8 @@ package com.monique.chip8;
 import javax.swing.JFrame;
 
 public class Display extends JFrame{
+    public static final int WIDTH = 64;
+    public static final int HEIGHT = 32;
     private Panel panel;
     private boolean[][] pixels;
     private KeyHandler keys = new KeyHandler();
@@ -10,8 +12,8 @@ public class Display extends JFrame{
     public Display() {
         super("MNQ-8");
 
-        pixels = new boolean[32][64];
-        panel = new Panel(this, 64, 32);
+        pixels = new boolean[HEIGHT][WIDTH];
+        panel = new Panel(this, WIDTH, HEIGHT);
 
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -25,7 +27,7 @@ public class Display extends JFrame{
     }
 
     public void clean() {
-        pixels = new boolean[32][64];
+        pixels = new boolean[HEIGHT][WIDTH];
     }
 
     public void update() {
