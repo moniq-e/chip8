@@ -17,13 +17,13 @@ public class CPU {
 
     public CPU(InputStream rom, Display display) {
         ram = new byte[4096];
-        pc = 0x200;
-        si = -1;
-        stack = new short[16];
+        pc = 0x200; //512
+        si = 0;
+        stack = new short[0x10]; //16
         delay = 0;
         sound = 0;
         ir = 0;
-        variables = new byte[16];
+        variables = new byte[0x10]; //16
 
         this.rom = rom;
         this.display = display;
@@ -82,54 +82,126 @@ public class CPU {
                 break;
             case 0x8000:
                 switch (opcode & 0x000F) {
-                    case 0x0000:
+                    case 0x0:
                         variables[x] = variables[y];
                         break;
-                    case 0x0001:
+                    case 0x1:
                         variables[x] |= variables[y];
                         break;
-                    case 0x0002:
+                    case 0x2:
                         variables[x] &= variables[y];
                         break;
-                    case 0x0003:
+                    case 0x3:
                         variables[x] ^= variables[y];
                         break;
-                    case 0x0004:
+                    case 0x4:
                         variables[x] += variables[y];
                         break;
-                    case 0x0005:
+                    case 0x5:
+                        variables[0xF] = (byte) ((variables[x] > variables[y]) ? 1 : 0);
                         variables[x] -= variables[y];
                         break;
-                    case 0x0007:
+                    case 0x6:
+                        var shifted = (byte) (variables[x] & 0x1);
+                        variables[x] >>= 1;
+                        variables[0xF] = shifted;
+                        break;
+                    case 0x7:
+                        variables[0xF] = (byte) ((variables[y] > variables[x]) ? 1 : 0);
                         variables[x] = (byte) (variables[y] - variables[x]);
+                        break;
+                    case 0xE:
+                        shifted = (byte) (variables[x] & 0x80);
+                        variables[x] <<= 1;
+                        variables[0xF] = shifted;
                         break;
                     default:
                         break;
                 }
+                break;
             case 0x9000:
                 if (variables[x] != variables[y]) pc += 2;
                 break;
             case 0xA000:
                 ir = (short) (opcode & 0x0FFF);
                 break;
+            case 0xB000:
+                pc = (short) (opcode & 0xFFF + variables[0]);
+                break;
+            case 0xC000:
+                variables[x] = (byte) (Math.round(Math.random() * 0xFF) & (opcode & 0xFF));
+                break;
             case 0xD000:
                 byte width = 8;
                 byte height = (byte) (opcode & 0x000F);
 
+                var xCord = variables[x] & 63;
+                var yCord = variables[y] & 31;
+
                 variables[0xF] = 0;
 
                 for (int i = 0; i < height; i++) {
+                    if (yCord + i > 31) break;
+
                     byte sprite = ram[ir + i];
 
                     for (int j = 0; j < width; j++) {
+                        if (xCord + j > 63) break;
+
                         if ((sprite & 0x80) > 0) {
-                            if (display.togglePixel(variables[x] + j, variables[y] + i)) {
+                            if (display.togglePixel(xCord + j, yCord + i)) {
                                 variables[0xF] = 1;
                             }
                         }
-
                         sprite <<= 1;
                     }
+                }
+                break;
+            case 0xE000:
+                switch (opcode & 0x00FF) {
+                    case 0x9E:
+                        if (display.getPressedKey(variables[x])) pc += 2;
+                        break;
+                    case 0xA1:
+                        if (!display.getPressedKey(variables[x])) pc += 2;
+                        break;
+                    default:
+                        break;
+                }
+                break;
+            case 0xF000:
+                switch (opcode & 0x00FF) {
+                    case 0x07:
+                        variables[x] = delay;
+                        break;
+                    case 0x15:
+                        delay = variables[x];
+                        break;
+                    case 0x18:
+                        sound = variables[x];
+                        break;
+                    case 0x1E:
+                        ir += variables[x];
+                        break;
+                    case 0x0A:
+                        var key = display.getAnyPressedKey();
+                        if (key.isPressed()) {
+                            variables[x] = (byte) key.getKeyCode();
+                        } else {
+                            pc -= 2; 
+                        }
+                        break;
+                    case 0x29:
+                        ir = (short) (0x50 + variables[x] * 5);
+                        break;
+                    case 0x33:
+                        var value = String.valueOf(Byte.toUnsignedInt(variables[x]));
+                        for (int i = 0; i < 3; i++) {
+                            ram[ir + i] = Byte.valueOf(value.charAt(2 - i)); //TODO
+                        }
+                        break;
+                    default:
+                        break;
                 }
                 break;
             default:
@@ -163,10 +235,8 @@ public class CPU {
         var fonts = font.split(", ");
 
         int i = 0x50;
-        int temp;
         for (String f : fonts) {
-            temp = Integer.decode(f);
-            ram[i++] = (byte) temp;
+            ram[i++] = (byte) Integer.decode(f).intValue();
         }
     }
 }
