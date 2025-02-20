@@ -5,25 +5,25 @@ import java.util.Scanner;
 
 public class CPU {
     private InputStream rom;
-    private byte[] ram;
+    private short[] ram;
     private short pc;
     private short si;
     private short ir;
     private short[] stack;
-    private byte[] variables;
-    private byte delay;
-    private byte sound;
+    private short[] variables;
+    private short delay;
+    private short sound;
     private Display display;
 
     public CPU(InputStream rom, Display display) {
-        ram = new byte[4096];
+        ram = new short[4096];
         pc = 0x200; //512
         si = 0;
         stack = new short[0x10]; //16
         delay = 0;
         sound = 0;
         ir = 0;
-        variables = new byte[0x10]; //16
+        variables = new short[0x10]; //16
 
         this.rom = rom;
         this.display = display;
@@ -75,10 +75,10 @@ public class CPU {
                 if (variables[x] == variables[y]) pc += 2;
                 break;
             case 0x6000:
-                variables[x] = (byte) (opcode & 0x00FF);
+                variables[x] = (short) (opcode & 0x00FF);
                 break;
             case 0x7000:
-                variables[x] += (byte) (opcode & 0x00FF);
+                variables[x] += (short) (opcode & 0x00FF);
                 break;
             case 0x8000:
                 switch (opcode & 0x000F) {
@@ -108,7 +108,7 @@ public class CPU {
                         break;
                     case 0x7:
                         variables[0xF] = (byte) ((variables[y] > variables[x]) ? 1 : 0);
-                        variables[x] = (byte) (variables[y] - variables[x]);
+                        variables[x] = (short) (variables[y] - variables[x]);
                         break;
                     case 0xE:
                         shifted = (byte) (variables[x] & 0x80);
@@ -129,21 +129,21 @@ public class CPU {
                 pc = (short) (opcode & 0xFFF + variables[0]);
                 break;
             case 0xC000:
-                variables[x] = (byte) (Math.round(Math.random() * 0xFF) & (opcode & 0xFF));
+                variables[x] = (short) (Math.round(Math.random() * 0xFF) & (opcode & 0xFF));
                 break;
             case 0xD000:
-                byte width = 8;
-                byte height = (byte) (opcode & 0x000F);
+                short width = 8;
+                short height = (short) (opcode & 0x000F);
 
-                var xCord = variables[x] & 63;
-                var yCord = variables[y] & 31;
+                byte xCord = (byte) (variables[x] & 63);
+                byte yCord = (byte) (variables[y] & 31);
 
                 variables[0xF] = 0;
 
                 for (int i = 0; i < height; i++) {
                     if (yCord + i > 31) break;
 
-                    byte sprite = ram[ir + i];
+                    var sprite = ram[ir + i];
 
                     for (int j = 0; j < width; j++) {
                         if (xCord + j > 63) break;
@@ -186,7 +186,7 @@ public class CPU {
                     case 0x0A:
                         var key = display.getAnyPressedKey();
                         if (key.isPressed()) {
-                            variables[x] = (byte) key.getKeyCode();
+                            variables[x] = (short) key.getKeyCode();
                         } else {
                             pc -= 2; 
                         }
@@ -195,9 +195,8 @@ public class CPU {
                         ir = (short) (0x50 + variables[x] * 5);
                         break;
                     case 0x33:
-                        var value = String.valueOf(Byte.toUnsignedInt(variables[x]));
                         for (int i = 0; i < 3; i++) {
-                            ram[ir + i] = Byte.valueOf(value.charAt(2 - i)); //TODO
+                            ram[ir + i] = (short) ((variables[x] / Math.pow(10, i)) % 10);
                         }
                         break;
                     default:
@@ -214,7 +213,7 @@ public class CPU {
             int data;
 
             while ((data = rom.read()) != -1) {
-                ram[pc++] = (byte) data;
+                ram[pc++] = (short) data;
             }
             pc = 0x200;
             rom.close();
@@ -236,7 +235,7 @@ public class CPU {
 
         int i = 0x50;
         for (String f : fonts) {
-            ram[i++] = (byte) Integer.decode(f).intValue();
+            ram[i++] = (short) Integer.decode(f).intValue();
         }
     }
 }

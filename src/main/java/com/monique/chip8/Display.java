@@ -42,7 +42,7 @@ public class Display extends JFrame{
         return !pixels[y][x];
     }
 
-    public boolean getPressedKey(byte keyCode) {
+    public boolean getPressedKey(short keyCode) {
         return keys.pressedKeys[keyCode];
     }
 
