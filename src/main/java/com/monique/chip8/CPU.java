@@ -76,43 +76,55 @@ public class CPU {
                 break;
             case 0x6000:
                 variables[x] = (short) (opcode & 0x00FF);
+                unsignVX(x);
                 break;
             case 0x7000:
                 variables[x] += (short) (opcode & 0x00FF);
+                unsignVX(x);
                 break;
             case 0x8000:
                 switch (opcode & 0x000F) {
                     case 0x0:
                         variables[x] = variables[y];
+                        unsignVX(x);
                         break;
                     case 0x1:
                         variables[x] |= variables[y];
+                        unsignVX(x);
                         break;
                     case 0x2:
                         variables[x] &= variables[y];
+                        unsignVX(x);
                         break;
                     case 0x3:
                         variables[x] ^= variables[y];
+                        unsignVX(x);
                         break;
                     case 0x4:
-                        variables[x] += variables[y];
+                        var sum = variables[x] + variables[y];
+                        variables[x] = (short) (sum & 0xFF);
+                        variables[0xF] = (byte) (sum > 255 ? 1 : 0);
                         break;
                     case 0x5:
                         variables[0xF] = (byte) ((variables[x] > variables[y]) ? 1 : 0);
                         variables[x] -= variables[y];
+                        unsignVX(x);
                         break;
                     case 0x6:
-                        var shifted = (byte) (variables[x] & 0x1);
+                        var shifted = (short) (variables[x] & 0x1);
                         variables[x] >>= 1;
+                        unsignVX(x);
                         variables[0xF] = shifted;
                         break;
                     case 0x7:
                         variables[0xF] = (byte) ((variables[y] > variables[x]) ? 1 : 0);
-                        variables[x] = (short) (variables[y] - variables[x]);
+                        variables[x] = (short) ((variables[y] - variables[x]));
+                        unsignVX(x);
                         break;
                     case 0xE:
                         shifted = (byte) (variables[x] & 0x80);
                         variables[x] <<= 1;
+                        unsignVX(x);
                         variables[0xF] = shifted;
                         break;
                     default:
@@ -216,6 +228,10 @@ public class CPU {
             default:
                 break;
         }
+    }
+
+    public void unsignVX(int x) {
+        variables[x] &= 0xFF;
     }
 
     private void loadRom() {
