@@ -3,7 +3,7 @@ package com.monique.chip8;
 public class App {
 
     private App() {
-        var rom = getClass().getResourceAsStream("/corax+.ch8");
+        var rom = getClass().getResourceAsStream("/pong.ch8");
 
         var display = new Display();
         var cpu = new CPU(rom, display);
@@ -11,7 +11,7 @@ public class App {
 
         while (true) {
             try {
-                Thread.sleep(4);
+                Thread.sleep(2);
 
                 cpu.tick();
                 display.update();

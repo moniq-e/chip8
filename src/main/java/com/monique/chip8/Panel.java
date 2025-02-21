@@ -9,7 +9,7 @@ public class Panel extends JPanel {
     private Display display;
     private final int pWidth;
     private final int pHeight;
-    private float size;
+    private int size;
     
     public Panel(Display display, int pWidth, int pHeight) {
         setSize(display.getSize());
@@ -28,14 +28,14 @@ public class Panel extends JPanel {
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, getWidth(), getHeight());
 
-        size = (float) getWidth() / pWidth;
+        size = Math.min(getWidth() / pWidth, getHeight() / pHeight);
 
         for (int y = 0; y < pHeight; y++) {
             for (int x = 0; x < pWidth; x++) {
                 var pixel = display.getPixels()[y][x];
                 if (pixel) {
                     g.setColor(Color.WHITE);
-                    g.fillRect((int) (x * size), (int) ((y * size) + (getHeight() - pHeight * size) / 2), (int) size, (int) size);
+                    g.fillRect((x * size) + (getWidth() - pWidth * size) / 2, (y * size) + (getHeight() - pHeight * size) / 2, size, size);
                 }
             }
         }
